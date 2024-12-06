@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Photo & Video Booth</title>
+  <style>
+    /* General Reset */
+    body {
+      margin: 0;
+      font-family: 'Courier New', monospace; /* Vintage font */
+      background: #f0f0f0; /* Light gray base */
+      color: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-image: 
+        linear-gradient(45deg, #ddd 25%, transparent 25%, transparent 75%, #ddd 75%, #ddd),
+        linear-gradient(45deg, #ddd 25%, #f0f0f0 25%, #f0f0f0 75%, #ddd 75%, #ddd);
+      background-size: 40px 40px; /* Adjust size for pixelated look */
+    }
+
+    /* Container Styles */
+    .container {
+      text-align: center;
+      background: #fff;
+      border: 3px solid #000;
+      padding: 20px;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 5px 5px 0 #000; /* Classic boxy shadow */
+    }
+
+    /* Heading */
+    h1 {
+      font-size: 2rem;
+      text-transform: uppercase;
+      text-shadow: 1px 1px 0 #000;
+      margin-bottom: 10px;
+    }
+
+    p {
+      font-size: 1rem;
+      margin-bottom: 20px;
+      line-height: 1.4;
+    }
+
+    /* Button Styles */
+    .button-container {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+    }
+
+    button {
+      background: #ddd;
+      border: 2px solid #000;
+      padding: 10px 20px;
+      font-family: 'Courier New', monospace;
+      font-size: 1rem;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 3px 3px 0 #000;
+      transition: all 0.2s ease;
+    }
+
+    button:hover {
+      background: #c0c0c0; /* Slightly darker gray */
+      box-shadow: 2px 2px 0 #000;
+    }
+
+    button:active {
+      box-shadow: none;
+      transform: translate(2px, 2px);
+    }
+
+    /* Retro Border */
+    .container::after {
+      content: "";
+      display: block;
+      width: 90%;
+      height: 1px;
+      background: repeating-linear-gradient(
+        45deg,
+        #000,
+        #000 10px,
+        #fff 10px,
+        #fff 20px
+      );
+      margin: 20px auto 0;
+    }
+
+    /* Responsiveness */
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 1.5rem;
+      }
+
+      p {
+        font-size: 0.9rem;
+      }
+
+      button {
+        font-size: 0.9rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Photo & Video Booth</h1>
+    <p>Step into the booth and capture your moments like it's 1995. Choose your style!</p>
+    <div class="button-container">
+      <button id="photo-btn" onclick="navigateTo('photo')">Photo</button>
+      <button id="video-btn" onclick="navigateTo('video')">Video</button>
+    </div>
+  </div>
+
+  <script>
+    function navigateTo(option) {
+      if (option === 'photo') {
+        window.location.href = './photo.html'; // Replace with your photo page URL
+      } else if (option === 'video') {
+        window.location.href = './video.html'; // Replace with your video page URL
+      }
+    }
+  </script>
+</body>
+</html>

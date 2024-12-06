@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Photo Capture</title>
+  <style>
+    /* General Reset */
+    body {
+      margin: 0;
+      font-family: 'Courier New', monospace;
+      background: #f0f0f0;
+      color: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+      background-image: 
+        linear-gradient(45deg, #ddd 25%, transparent 25%, transparent 75%, #ddd 75%, #ddd),
+        linear-gradient(45deg, #ddd 25%, #f0f0f0 25%, #f0f0f0 75%, #ddd 75%, #ddd);
+      background-size: 40px 40px; /* Retro checkered background */
+    }
+
+    /* Camera Container */
+    .camera-container {
+      position: relative;
+      width: 80%;
+      max-width: 600px;
+      background-color: #fff;
+      box-shadow: 5px 5px 0 #000; /* Retro shadow */
+      border-radius: 8px;
+      padding: 10px;
+      text-align: center;
+      border: 3px solid #000;
+    }
+
+    /* Countdown Display */
+    #countdown {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 2.5rem;  /* Smaller font size */
+      color: #fff;  /* White color */
+      font-family: 'Press Start 2P', cursive; /* Pixelated font */
+      text-shadow: 2px 2px 0 #000; /* Black shadow */
+      letter-spacing: 2px; /* Add some space between letters */
+    }
+
+    /* Video Element */
+    video, canvas {
+      width: 100%;
+      border-radius: 8px;
+    }
+
+    /* Buttons */
+    .controls {
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 1rem;
+      cursor: pointer;
+      background: #ddd;
+      border: 2px solid #000;
+      color: #000;
+      text-transform: uppercase;
+      font-family: 'Courier New', monospace;
+      border-radius: 5px;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background: #c0c0c0; /* Slightly darker gray */
+    }
+
+    /* Enlarged Photo Display */
+    #enlarged-photo {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: none;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 10;
+    }
+
+    #enlarged-photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 8px;
+      margin: 0 auto;
+    }
+
+    /* Photo Gallery */
+    .photo-gallery {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .photo-gallery img {
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+  </style>
+
+  <!-- Include Google Fonts for retro pixel font -->
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+</head>
+<body>
+
+  <div class="camera-container">
+    <video id="video" autoplay></video>
+    <canvas id="canvas" style="display:none;"></canvas>
+    <div id="countdown"></div>
+    <div class="controls">
+      <button id="start-btn">Start</button>
+      <button id="take-photo-btn" style="display:none;">Take Photo</button>
+    </div>
+    <div id="enlarged-photo">
+      <img id="enlarged-img" src="" alt="Enlarged Photo">
+    </div>
+  </div>
+
+  <div class="photo-gallery" id="photo-gallery"></div>
+
+  <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const countdownElem = document.getElementById('countdown');
+    const startBtn = document.getElementById('start-btn');
+    const takePhotoBtn = document.getElementById('take-photo-btn');
+    const photoGallery = document.getElementById('photo-gallery');
+    const enlargedPhoto = document.getElementById('enlarged-photo');
+    const enlargedImg = document.getElementById('enlarged-img');
+
+    let stream;
+    let photoCount = 0;
+    let photos = []; // Array to store captured photos
+
+    // Accessing the camera
+    async function setupCamera() {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
+      } catch (err) {
+        console.error('Error accessing camera: ', err);
+      }
+    }
+
+    // Countdown function
+    function startCountdown(duration, callback) {
+      let timeLeft = duration;
+      countdownElem.textContent = timeLeft;
+      const interval = setInterval(() => {
+        timeLeft--;
+        countdownElem.textContent = timeLeft;
+        if (timeLeft <= 0) {
+          clearInterval(interval);
+          callback();
+        }
+      }, 1000);
+    }
+
+    // Take a photo
+    function takePhoto() {
+      const ctx = canvas.getContext('2d');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const imgData = canvas.toDataURL('image/png');
+      photos.push(imgData); // Store the photo in the array
+      photoCount++;
+
+      // If we have captured all 5 photos
+      if (photoCount < 5) {
+        takePhotoBtn.style.display = 'block';
+        startCountdown(3, takePhoto); // Start countdown for next photo
+      } else {
+        takePhotoBtn.style.display = 'none';
+        alert('5 photos captured');
+        stopCamera(); // Stop the camera after 5 photos
+        displayPhotos(); // Show the photos after all 5 are captured
+      }
+    }
+
+    // Stop the camera feed
+    function stopCamera() {
+      const tracks = stream.getTracks();
+      tracks.forEach(track => track.stop());
+    }
+
+    // Display the captured photos
+    function displayPhotos() {
+      photoGallery.innerHTML = ''; // Clear previous gallery if any
+      photos.forEach(photo => {
+        const img = document.createElement('img');
+        img.src = photo; // Set the source to the captured image
+        img.addEventListener('click', () => showEnlargedPhoto(photo)); // Show enlarged photo when clicked
+        photoGallery.appendChild(img); // Append the image to the gallery
+      });
+    }
+
+    // Display enlarged photo inside the camera container
+    function showEnlargedPhoto(photo) {
+      enlargedImg.src = photo;
+      enlargedPhoto.style.display = 'block'; // Show enlarged photo
+    }
+
+    // Start the photo capture process
+    startBtn.addEventListener('click', () => {
+      setupCamera();
+      startBtn.style.display = 'none'; // Hide start button
+      takePhotoBtn.style.display = 'block'; // Show take photo button
+      startCountdown(3, takePhoto); // Start the first countdown
+    });
+
+    // Take photo when button is clicked
+    takePhotoBtn.addEventListener('click', takePhoto);
+
+  </script>
+
+</body>
+</html>
